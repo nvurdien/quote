@@ -19,25 +19,34 @@ class QuoteController extends Controller
         $validated = $request->validate([
             'dob' => 'required|date',
             'state' => 'required|string|size:2',
-            'is_smoker' => 'required|boolean',
-            'gender' => 'required|in:male,female',
+            'smoker' => 'required|boolean',
+            'gender' => 'required|in:M,F',
             'term' => 'required|in:10,15,20,30',
-            'coverage_amount' => 'required|integer|min:100000|max:1000000'
+            'coverage_amount' => 'required|integer'
         ]);
 
-        $response = Http::post('https://plumlife-api-stage.azurefd.net/api/quote', [
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+        ])->post('https://plumlife-api-stage.azurefd.net/api/quote', [
             'productId' => 1,
+            'riskClass' => 1,
             'dob' => $validated['dob'],
             'state' => $validated['state'],
-            'smoker' => $validated['is_smoker'],
+            'smoker' => $validated['smoker'],
             'gender' => $validated['gender'],
             'term' => $validated['term'],
             'coverage_amount' => $validated['coverage_amount']
         ]);
 
         if ($response->failed()) {
-
-            return response()->json(['error' => 'Quote API failed', 'details' => $response->body()], 500);
+            Log::error('Quote API failed', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return response()->json([
+                'error' => 'Quote API failed', 'details' => $response->body()
+            ], $response->status());
         }
 
         $quotes = $response->json();
