@@ -42,7 +42,7 @@ php artisan serve --port=8000
 
 ### 3. Setup Angular (Frontend)
 ```bash
-cd frontend  # or wherever your Angular app is
+cd insurance-quote-frontend
 npm install
 ng serve --port 4200
 ```
