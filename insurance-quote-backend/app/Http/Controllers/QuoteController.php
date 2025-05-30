@@ -22,13 +22,10 @@ class QuoteController extends Controller
             'smoker' => 'required|boolean',
             'gender' => 'required|in:M,F',
             'term' => 'required|in:10,15,20,30',
-            'coverage_amount' => 'required|integer'
+            'coverage_amount' => 'required|integer|min:100000|max:1000000'
         ]);
 
-        $response = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])->post('https://plumlife-api-stage.azurefd.net/api/quote', [
+        $response = Http::get('https://plumlife-api-lab.azurewebsites.net/api/quote', [
             'productId' => 1,
             'riskClass' => 1,
             'dob' => $validated['dob'],
@@ -42,27 +39,48 @@ class QuoteController extends Controller
         if ($response->failed()) {
             Log::error('Quote API failed', [
                 'status' => $response->status(),
-                'body' => $response->body()
+                'body' => $response->body(),
+                'url' => $response->url()
             ]);
             return response()->json([
                 'error' => 'Quote API failed', 'details' => $response->body()
             ], $response->status());
         }
 
-        $quotes = $response->json();
-        $requestedCoverage = (int)$validated['coverage_amount'];
+        $responseData = $response->json();
+        $term = (int) $validated['term'];
+        $requestedCoverage = (int) $validated['coverage_amount'];
         
-        foreach ($quotes as $quote) {
-            if ($quote['coverage_amount'] === $requestedCoverage) {
-                return response()->json([
-                    'monthly_premium' => $quote['monthly_premium'],
-                    'quarterly_premium' => $quote['quarterly_premium'],
-                    'semi_annual_premium' => $quote['semi_annual_premium'],
-                    'annual_premium' => $quote['annual_premium']
-                ]);
-            }
+        // Get available amounts and sort
+        $availableCoverages = collect($responseData['coverage_amounts'])->sort()->values();
+
+        // Find closest lower or equal amount
+        $matchedCoverage = $availableCoverages->filter(function ($amount) use ($requestedCoverage) {
+            return $amount <= $requestedCoverage;
+        })->last();
+
+        if (!$matchedCoverage || !isset($responseData['quotes'][$term])) {
+            return response()->json(['error' => 'No matching quote found'], 404);
         }
 
-        return response()->json(['error' => 'Quote not found'], 404);
+        // Get the quotes for that term
+        $quotesForTerm = $responseData['quotes'][$term];
+
+        // Find the quote with the matched coverage amount
+        $quote = collect($quotesForTerm)->firstWhere('faceAmount', $matchedCoverage);
+        if ($quote) {
+            return response()->json([
+                'matched_coverage_amount' => $matchedCoverage,
+                'monthly_premium' => $quote['monthlyPremium'],
+                'quarterly_premium' => $quote['quarterlyPremium'],
+                'semi_annual_premium' => $quote['semiannuallyPremium'],
+                'annual_premium' => $quote['annuallyPremium']
+            ], 200, [
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
+        }
+        return response()->json(['error' => 'No quote found for the requested coverage amount'], 404);
     }
 }

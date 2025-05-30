@@ -81,8 +81,8 @@ export class QuoteFormComponent {
     this.quoteForm = this.fb.group({
       dob: ['', Validators.required],
       state: ['', [Validators.required, Validators.maxLength(2)]],
-      is_smoker: [false, Validators.required],
-      gender: ['male', Validators.required],
+      smoker: [false, Validators.required],
+      gender: ['M', Validators.required],
       term: ['', Validators.required],
       coverage_amount: [
         100000,

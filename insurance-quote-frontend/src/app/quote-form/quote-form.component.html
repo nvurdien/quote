@@ -23,10 +23,10 @@
          <label for="gender" [class]="labelClasses">Gender</label>
          <div>
            <label class="radio-inline">
-             <input type="radio" formControlName="gender" value="male"> Male
+             <input type="radio" formControlName="gender" value="M"> Male
            </label>
            <label class="radio-inline">
-             <input type="radio" formControlName="gender" value="female"> Female
+             <input type="radio" formControlName="gender" value="F"> Female
            </label>
          </div>
        </div>
@@ -51,7 +51,7 @@
        </button>
      </form>
      
-     <div *ngIf="error" class="alert alert-danger mt-3">
+     <div *ngIf="error" class="mt-3">
        {{ error }}
      </div>
      
@@ -59,6 +59,7 @@
        <h3>Your Insurance Quote</h3>
        <div class="card">
          <div class="card-body">
+           <p><strong>Matched Coverage Amount:</strong> ${{ quoteResult.matched_coverage_amount | number:'1.2-2' }}</p>
            <p><strong>Monthly Premium:</strong> ${{ quoteResult.monthly_premium | number:'1.2-2' }}</p>
            <p><strong>Quarterly Premium:</strong> ${{ quoteResult.quarterly_premium | number:'1.2-2' }}</p>
            <p><strong>Semi-Annual Premium:</strong> ${{ quoteResult.semi_annual_premium | number:'1.2-2' }}</p>

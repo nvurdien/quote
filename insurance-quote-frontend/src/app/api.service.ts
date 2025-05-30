@@ -4,6 +4,14 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
 
+export type Quote = {
+  matched_coverage_amount: number;
+  monthly_premium: string;
+  quarterly_premium: string;
+  semi_annual_premium: string;
+  annual_premium: string;
+};
+
 @Injectable({
   providedIn: 'root',
 })
