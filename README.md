@@ -10,8 +10,6 @@ This is a full-stack quote generation application built with **Angular** (fronte
 - **Backend**: Laravel (port `8000`)
 - **External API**: Quote data from `https://plumlife-api-lab.azurewebsites.net/api/quote`
 
----
-
 ## Features
 
 - Dynamic form for user input (DOB, state, smoker status, etc.)
@@ -19,8 +17,6 @@ This is a full-stack quote generation application built with **Angular** (fronte
 - Backend fetches quotes from external API
 - Filters and returns a matching or closest coverage quote
 - Handles off-value coverage requests gracefully (e.g. `500343` → `500000`)
-
----
 
 ## Getting Started
 
